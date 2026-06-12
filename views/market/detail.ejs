@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= product.title %> - 4989(사구팔구)</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light" style="font-family: 'Malgun Gothic', dotum, sans-serif;">
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="/">🛒 4989(사구팔구)</a>
+      <a class="btn btn-outline-light btn-sm" href="/"><i class="bi bi-arrow-left"></i> 메인 장터로 돌아가기</a>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <div class="bg-white rounded-4 shadow-sm p-4 p-md-5 border">
+      
+      <div class="row g-5">
+        
+        <div class="col-md-6 text-center">
+          <div class="border rounded-4 overflow-hidden bg-white shadow-sm" style="max-height: 500px;">
+            <img src="<%= product.image %>" class="img-fluid w-100 h-100" style="object-fit: contain; max-height: 500px;" alt="상품 이미지">
+          </div>
+        </div>
+
+        <div class="col-md-6 d-flex flex-column justify-content-between">
+          <div>
+            <h2 class="fw-bold text-dark mb-4" style="font-size: 2rem; letter-spacing: -1px;"><%= product.title %></h2>
+            
+            <hr class="text-muted opacity-25">
+
+            <div class="my-4 pt-2">
+              <div class="d-flex align-items-baseline">
+                <span class="text-danger fw-bold h1 m-0" style="font-size: 2.5rem;"><%= product.price.toLocaleString() %></span>
+                <span class="text-danger fw-bold h4 m-0 ms-1">원</span>
+              </div>
+            </div>
+
+            <hr class="text-muted opacity-25">
+
+            <div class="p-3 my-4 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+              <div>
+                <span class="text-muted small d-block">교역 상인</span>
+                <strong class="text-dark"><i class="bi bi-person-badge"></i> <%= product.writer %></strong>
+              </div>
+              <a href="/user/products/<%= product.writer %>" class="btn btn-sm btn-outline-primary fw-bold px-3 py-2">
+                <i class="bi bi-shop"></i> 상인 미니상점 구경 🛍️
+              </a>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <div class="d-grid gap-2">
+              <form action="/market/cart/add" method="POST" class="d-grid">
+                <input type="hidden" name="productId" value="<%= product._id %>">
+                <input type="hidden" name="title" value="<%= product.title %>">
+                <input type="hidden" name="price" value="<%= product.price %>">
+                <input type="hidden" name="image" value="<%= product.image %>">
+                
+                <button type="submit" class="btn btn-primary btn-lg fw-bold py-3">
+                  <i class="bi bi-cart4"></i> 장바구니 담기
+                </button>
+              </form>
+              
+              <% if (user && user.id === product.writer) { %>
+                <form action="/product/delete/<%= product._id %>" method="POST" class="d-grid mt-2" onsubmit="return confirm('정말 이 물품을 파기하시겠습니까?');">
+                  <button type="submit" class="btn btn-outline-danger btn-sm fw-bold py-2">
+                    <i class="bi bi-trash3"></i> 내 물품 회수하기(게시글 삭제)
+                  </button>
+                </form>
+              <% } %>
+            </div>
+          </div>
+
+        </div>
+      </div> 
+
+      <div class="mt-5 pt-5 border-top">
+        <h4 class="fw-bold text-dark mb-4"><i class="bi bi-file-earmark-text"></i> 상품 상세 설명 및 첨부 정보</h4>
+        
+        <div class="p-4 rounded-4 border bg-white shadow-sm" style="white-space: pre-wrap; word-wrap: break-word; line-height: 1.8; color: #495057; font-size: 1.05rem;">
+          <%= product.content %>
+        </div>
+      </div>
+
+        <div class="comment-section mt-5 pt-5 border-top">
+  <h4 class="fw-bold text-dark mb-4">
+    <i class="bi bi-chat-dots-fill text-primary"></i> 구매자 한줄평 및 평점
+    <span class="badge bg-secondary ms-1 fs-6"><%= comments.length %></span>
+  </h4>
+
+  <div class="comment-form-box card p-3 shadow-sm rounded-3 mb-4 bg-light border">
+    <form action="/comment/<%= product._id %>" method="POST">
+      <div class="row g-2">
+        <div class="col-md-2">
+          <select name="rating" class="form-select py-2 fw-bold text-warning border">
+            <option value="5" selected>⭐⭐⭐⭐⭐ (5점)</option>
+            <option value="4">⭐⭐⭐⭐ (4점)</option>
+            <option value="3">⭐⭐⭐ (3점)</option>
+            <option value="2">⭐⭐ (2점)</option>
+            <option value="1">⭐ (1점)</option>
+          </select>
+        </div>
+        <div class="col-md-10">
+          <div class="input-group">
+            <input type="text" name="content" class="form-control py-2" placeholder="구매하신 물품에 대한 솔직한 평가를 남겨보세요! (구매자만 등록 가능)" required>
+            <button type="submit" class="btn btn-success fw-bold px-4">
+              <i class="bi bi-check-circle"></i> 등록
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="comment-list-box rounded-4 border bg-white shadow-sm p-3">
+    <% if (comments.length === 0) { %>
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-star display-6 d-block mb-3 opacity-50 text-warning"></i>
+        <p class="m-0 font-weight-bold">아직 작성된 평점이 없습니다.</p>
+        <small class="text-black-50">구매 후 첫 번째 별점의 주인공이 되어보세요!</small>
+      </div>
+    <% } else { %>
+      <div class="list-group list-group-flush">
+        <% comments.forEach(function(comment) { %>
+          <div class="list-group-item py-3 px-2 border-bottom">
+            <div class="d-flex w-100 justify-content-between align-items-center mb-2">
+              <h6 class="mb-0 fw-bold text-dark">
+                <i class="bi bi-person-circle text-secondary me-1"></i><%= comment.writerName %> 
+                <small class="text-muted fw-normal ms-1">(<%= comment.writerId %>)</small>
+                
+                <span class="text-warning ms-3">
+                  <% for(let i=0; i<comment.rating; i++) { %>★<% } %><% for(let i=comment.rating; i<5; i++) { %>☆<% } %>
+                </span>
+              </h6>
+              <small class="text-muted">
+                <i class="bi bi-clock me-1"></i><%= new Date(comment.createdAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute:'2-digit' }) %>
+              </small>
+            </div>
+            <p class="mb-0 text-secondary ps-4" style="font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap;"><%= comment.content %></p>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+    </div>
+  </div>
+  </div>
+</div>
+
+  <footer class="text-center py-4 text-muted border-top bg-white mt-5 small">
+    &copy; 2026 4989(사구팔구) 이진혁 이서준 문지송 | All Rights Reserved.
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

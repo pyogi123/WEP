@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>내 지갑 관리 - MyMarket</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="bg-light">
+  <div class="container my-5">
+    <div class="text-center mb-4">
+      <a href="/" class="btn btn-secondary">메인 장터로 이동</a>
+    </div>
+
+    <div class="card p-4 shadow-sm mb-4 text-center">
+      <h3>💼 '<%= user.name %>' 님의 가상 지갑</h3>
+      <p class="text-muted">과제 제출용 테스트 자산을 관리하는 공간입니다.</p>
+      <div class="row mt-4">
+        <div class="col-md-6 border-end">
+          <small>보유 크레딧</small>
+          <h2 class="text-warning"><%= user.credit.toLocaleString() %> P</h2>
+        </div>
+        <div class="col-md-6">
+          <small>보유 가상 현금</small>
+          <h2 class="text-success"><%= (user.cash || 0).toLocaleString() %> 원</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-4 shadow-sm mb-4">
+      <h5>💵 가상 현금 충전소</h5>
+      <form action="/wallet/charge" method="POST">
+        <input type="number" name="amount" class="form-control mb-2" placeholder="충전할 금액 입력 (예: 50000)">
+        <button type="submit" class="btn btn-success w-100">바로 충전하기</button>
+      </form>
+    </div>
+
+    <div class="card p-4 shadow-sm">
+      <h5>▶ 광고 시청하고 크레딧 획득</h5>
+      <p>버튼을 눌러 3초간 광고를 시청하면 5,000 크레딧을 획득합니다.</p>
+      <form id="adForm" action="/wallet/ad" method="POST">
+        <button type="button" class="btn btn-danger w-100" onclick="startAd()">가상 광고 시청하고 5,000 크레딧 받기</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal fade" id="adModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">📢 광고 시청 중</h5>
+        </div>
+        <div class="modal-body text-center">
+          <p>4989를 이용해주셔서 감사합니다.</p>
+          <div class="progress" style="height: 25px;">
+            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-danger" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function startAd() {
+      // 모달 열기
+      var adModal = new bootstrap.Modal(document.getElementById('adModal'));
+      adModal.show();
+
+      // 프로그레스 바 3초 채우기
+      var bar = document.getElementById('progressBar');
+      var width = 0;
+      var interval = setInterval(function() {
+        if (width >= 100) {
+          clearInterval(interval);
+          // 3초 후 폼 자동 제출
+          document.getElementById('adForm').submit();
+        } else {
+          width += 1; // 3초를 맞추기 위한 속도 (1%씩 30ms 간격으로 = 약 3초)
+          bar.style.width = width + '%';
+        }
+      }, 30);
+    }
+  </script>
+</body>
+</html>
