@@ -9,7 +9,7 @@ const Cart = require('../models/Cart');
 const Order = require('../models/Order');
 const Comment = require('../models/Comment');
 
-// Multer 설정
+// Multer 설정 (.txt 파일 업로드를 위해 유지)
 const storage = multer.diskStorage({
     destination: (req, file, cb) => { cb(null, 'public/uploads/'); },
     filename: (req, file, cb) => { cb(null, Date.now() + path.extname(file.originalname)); }
@@ -37,21 +37,42 @@ router.get('/', async (req, res) => {
     } catch (err) { res.status(500).send('서버 오류 발생'); }
 });
 
-// 상품 등록
+// 상품 등록 페이지 이동
 router.get('/product/create', isAuth, (req, res) => { res.render('market/create'); });
-router.post('/product/create', isAuth, upload.fields([{ name: 'image' }, { name: 'textFile' }]), async (req, res) => {
+
+// 상품 등록 처리
+// 🛠 [수정]: 이미지 파일 처리를 제외하고 textFile만 multer가 받도록 수정했습니다.
+router.post('/product/create', isAuth, upload.fields([{ name: 'textFile' }]), async (req, res) => {
     try {
-        const { title, price, content, stock } = req.body;
+        // 🛠 [수정]: req.body에서 create.ejs에 새로 만든 'imageUrl' 속성을 추가로 받아옵니다.
+        const { title, price, content, stock, imageUrl } = req.body;
         let finalContent = content || '';
+        
+        // 기존 .txt 문서 첨부 자동 반영 기능 (원래 코드 그대로 보존)
         if (req.files && req.files['textFile']) {
             const textFilePath = req.files['textFile'][0].path;
             finalContent += `\n\n[첨부된 .txt 문서 내용]:\n${fs.readFileSync(textFilePath, 'utf8')}`;
             fs.unlinkSync(textFilePath);
         }
-        const imagePath = req.files['image'] ? `/uploads/${req.files['image'][0].filename}` : '/uploads/default.jpg';
-        await Product.create({ title, price, content: finalContent, image: imagePath, writer: req.session.user.id, stock: parseInt(stock) || 1 });
+        
+        // 🛠 [수정]: 기존의 파일 업로드 경로 대신 사용자가 입력한 인터넷 이미지 주소(imageUrl)를 DB에 저장합니다.
+        // 입력된 주소가 없다면 기본 이미지를 사용합니다.
+        const imagePath = imageUrl || '/uploads/default.jpg';
+        
+        await Product.create({ 
+            title, 
+            price, 
+            content: finalContent, 
+            image: imagePath, // 🛠 URL 주소가 그대로 들어갑니다.
+            writer: req.session.user.id, 
+            stock: parseInt(stock) || 1 
+        });
+        
         res.redirect('/');
-    } catch (err) { res.status(500).send('물품 등록 실패'); }
+    } catch (err) { 
+        console.error(err);
+        res.status(500).send('물품 등록 실패'); 
+    }
 });
 
 // 상세 페이지
